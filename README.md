@@ -27,7 +27,7 @@ You should get an "AverageReturn" of around -100 to -150
 
 2) Run imitation learning
 ```
-python scripts/pendulum_gcl.py
+python scripts/pendulum_irl.py
 ```
 
-The "OriginalTaskAverageReturn" should reach around -100 to -150
+The "OriginalTaskAverageReturn" should reach around -200
