@@ -288,9 +288,9 @@ class AIRLStateAction(SingleTimestepIRL):
             # Should be batch_size x T x dO/dU
             self.obs_t = tf.placeholder(tf.float32, [None, self.dO], name='obs')
             self.act_t = tf.placeholder(tf.float32, [None, self.dU], name='act')
-            self.labels = tf.placeholder(tf.float32, [None, 1], name='labels')
-            self.lprobs = tf.placeholder(tf.float32, [None, 1], name='log_probs')
-            self.lr = tf.placeholder(tf.float32, (), name='lr')
+            self.labels = tf.placeholder(tf.float32, [None, 1], name='labels') ##togrok
+            self.lprobs = tf.placeholder(tf.float32, [None, 1], name='log_probs') ##togrok
+            self.lr = tf.placeholder(tf.float32, (), name='lr') ##togrok
 
             obs_act = tf.concat([self.obs_t, self.act_t], axis=1)
             with tf.variable_scope('discrim') as dvs:
@@ -308,15 +308,15 @@ class AIRLStateAction(SingleTimestepIRL):
             else:
                 reg_loss = 0
 
-            log_pq = tf.reduce_logsumexp([log_p_tau, log_q_tau], axis=0)
-            self.d_tau = tf.exp(log_p_tau-log_pq)
-            cent_loss = -tf.reduce_mean(self.labels*(log_p_tau-log_pq) + (1-self.labels)*(log_q_tau-log_pq))
+            log_pq = tf.reduce_logsumexp([log_p_tau, log_q_tau], axis=0) ## log of p+q
+            self.d_tau = tf.exp(log_p_tau-log_pq) ## used for logging
+            cent_loss = -tf.reduce_mean(self.labels*(log_p_tau-log_pq) + (1-self.labels)*(log_q_tau-log_pq)) ## cross entropy loss
 
             self.loss = cent_loss + reg_loss
             self.step = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
             self._make_param_ops(_vs)
 
-
+    # trains discriminator
     def fit(self, paths, policy=None, batch_size=32, logger=None, lr=1e-3,**kwargs):
         #self._compute_path_probs(paths, insert=True)
         self.eval_expert_probs(paths, policy, insert=True)

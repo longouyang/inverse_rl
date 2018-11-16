@@ -150,13 +150,14 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
         if self.train_irl:
             max_itrs = self.discrim_train_itrs
             lr=1e-3
+            ## louyang: i believe this is line 5 of algorithm 1
             mean_loss = self.irl_model.fit(paths, policy=self.policy, itr=itr, max_itrs=max_itrs, lr=lr,
                                            logger=logger)
 
             logger.record_tabular('IRLLoss', mean_loss)
             self.__irl_params = self.irl_model.get_params()
 
-        probs = self.irl_model.eval(paths, gamma=self.discount, itr=itr)
+        probs = self.irl_model.eval(paths, gamma=self.discount, itr=itr) # togrok. this has shape num_trajectories * traj_length. and comes from self.energy inside IRL_model
         probs_flat = np.concatenate(probs)  # trajectory length varies
 
         logger.record_tabular('IRLRewardMean', np.mean(probs_flat))
@@ -170,7 +171,7 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
                 path['rewards'][-1] += self.irl_model_wt * probs[i]
         else:
             for i, path in enumerate(paths):
-                path['rewards'] += self.irl_model_wt * probs[i]
+                path['rewards'] += self.irl_model_wt * probs[i] ## togrok: why are rewards and log probs being added in the discriminator?
         return paths
 
     def train(self):
@@ -188,11 +189,16 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
             itr_start_time = time.time()
             with logger.prefix('itr #%d | ' % itr):
                 logger.log("Obtaining samples...")
+                ## collects trajectories from our current policy
                 paths = self.obtain_samples(itr)
 
                 logger.log("Processing samples...")
+                ## fits discriminator. togrok: and also updates reward?
                 paths = self.compute_irl(paths, itr=itr)
-                returns.append(self.log_avg_returns(paths))
+                returns.append(self.log_avg_returns(paths)) ## togrok: i think these are expected rewards. but expectation with respect to what?
+
+                ## togrok: this augments paths with advantage information. is this just for trajectories from our policy?
+                ## or do we somehow have advantages for the expert trajectories too?
                 samples_data = self.process_samples(itr, paths)
 
                 logger.log("Logging diagnostics...")
