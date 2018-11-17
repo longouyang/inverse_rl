@@ -30,4 +30,4 @@ You should get an "AverageReturn" of around -100 to -150
 python scripts/pendulum_irl.py
 ```
 
-The "OriginalTaskAverageReturn" should reach around -200
+The "OriginalTaskAverageReturn" should reach around -100 to -150
