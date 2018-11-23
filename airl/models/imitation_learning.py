@@ -288,9 +288,9 @@ class AIRLStateAction(SingleTimestepIRL):
             # Should be batch_size x T x dO/dU
             self.obs_t = tf.placeholder(tf.float32, [None, self.dO], name='obs')
             self.act_t = tf.placeholder(tf.float32, [None, self.dU], name='act')
-            self.labels = tf.placeholder(tf.float32, [None, 1], name='labels') ##togrok
-            self.lprobs = tf.placeholder(tf.float32, [None, 1], name='log_probs') ##togrok
-            self.lr = tf.placeholder(tf.float32, (), name='lr') ##togrok
+            self.labels = tf.placeholder(tf.float32, [None, 1], name='labels') ## indicates whether a state-action pair came from expert or generator
+            self.lprobs = tf.placeholder(tf.float32, [None, 1], name='log_probs') ## togrok
+            self.lr = tf.placeholder(tf.float32, (), name='lr') ## learning rate
 
             obs_act = tf.concat([self.obs_t, self.act_t], axis=1)
             with tf.variable_scope('discrim') as dvs:
@@ -321,7 +321,7 @@ class AIRLStateAction(SingleTimestepIRL):
         #self._compute_path_probs(paths, insert=True)
         self.eval_expert_probs(paths, policy, insert=True)
         self.eval_expert_probs(self.expert_trajs, policy, insert=True)
-        obs, acts, path_probs = self.extract_paths(paths, keys=('observations', 'actions', 'a_logprobs'))
+        obs, acts, path_probs = self.extract_paths(paths, keys=('observations', 'actions', 'a_logprobs')) # from generator
         expert_obs, expert_acts, expert_probs = self.extract_paths(self.expert_trajs, keys=('observations', 'actions', 'a_logprobs'))
 
         # Train discriminator
@@ -345,7 +345,6 @@ class AIRLStateAction(SingleTimestepIRL):
                 self.lprobs: lprobs_batch,
                 self.lr: lr
             })
-
             it.record('loss', loss)
             if it.heartbeat:
                 print(it.itr_message())
