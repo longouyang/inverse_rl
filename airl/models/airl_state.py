@@ -88,7 +88,7 @@ class AIRL(SingleTimestepIRL):
             self.step = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(tot_loss)
             self._make_param_ops(_vs)
 
-    def fit(self, paths, policy=None, batch_size=32, logger=None, lr=1e-3,**kwargs):
+    def fit(self, paths, policy=None, batch_size=32, logger=None, lr=1e-3, max_itrs=100, **kwargs):
 
         if self.fusion is not None:
             old_paths = self.fusion.sample_paths(n=len(paths))
@@ -112,7 +112,7 @@ class AIRL(SingleTimestepIRL):
 
 
         # Train discriminator
-        for it in TrainingIterator(self.max_itrs, heartbeat=5):
+        for it in TrainingIterator(max_itrs, heartbeat=5):
             nobs_batch, obs_batch, nact_batch, act_batch, lprobs_batch = \
                 self.sample_batch(obs_next, obs, acts_next, acts, path_probs, batch_size=batch_size)
 
