@@ -22,7 +22,7 @@ def main():
         policy=policy,
         irl_model=irl_model,
         n_itr=200,
-        batch_size=1000,
+        batch_size=6400,
         max_path_length=100,
         discount=0.99,
         store_paths=True,
@@ -30,7 +30,8 @@ def main():
         irl_model_wt=1.0,
         entropy_weight=0.1, # this should be 1.0 but 0.1 seems to work better
         zero_environment_reward=True,
-        baseline=LinearFeatureBaseline(env_spec=env.spec)
+        baseline=LinearFeatureBaseline(env_spec=env.spec),
+        train_irl=True
     )
 
     with rllab_logdir(algo=algo, dirname='data/pendulum_gcl'):

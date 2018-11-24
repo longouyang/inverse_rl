@@ -12,7 +12,6 @@ from collections import deque
 
 from airl.utils.hyperparametrized import Hyperparametrized
 
-
 class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
     """
     Base class for batch sampling-based policy optimization methods.
@@ -155,7 +154,10 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
                                            logger=logger)
 
             logger.record_tabular('IRLLoss', mean_loss)
+            print('IRL Loss is', mean_loss)
             self.__irl_params = self.irl_model.get_params()
+        else:
+            logger.record_tabular('IRLLoss', 'None')
 
         probs = self.irl_model.eval(paths, gamma=self.discount, itr=itr) # togrok. this has shape num_trajectories * traj_length. and comes from self.energy inside IRL_model
         probs_flat = np.concatenate(probs)  # trajectory length varies
@@ -183,7 +185,7 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
             self.irl_model.set_params(self.init_irl_params)
         self.start_worker()
         start_time = time.time()
-
+        self.do_optimize_policy = False
         returns = []
         for itr in range(self.start_itr, self.n_itr):
             itr_start_time = time.time()
@@ -194,6 +196,9 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
 
                 logger.log("Processing samples...")
                 ## fits discriminator. togrok: and also updates reward?
+                if itr > 50:
+                    self.train_irl = False
+                    self.do_optimize_policy = True
                 paths = self.compute_irl(paths, itr=itr)
                 returns.append(self.log_avg_returns(paths)) ## togrok: i think these are expected rewards. but expectation with respect to what?
 
