@@ -185,7 +185,7 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
             self.irl_model.set_params(self.init_irl_params)
         self.start_worker()
         start_time = time.time()
-        self.do_optimize_policy = False
+        self.do_optimize_policy = True
         returns = []
         for itr in range(self.start_itr, self.n_itr):
             itr_start_time = time.time()
@@ -196,9 +196,9 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
 
                 logger.log("Processing samples...")
                 ## fits discriminator. togrok: and also updates reward?
-                if itr > 50:
-                    self.train_irl = False
-                    self.do_optimize_policy = True
+                #if itr > 50:
+                #    self.train_irl = False
+                #    self.do_optimize_policy = True
                 paths = self.compute_irl(paths, itr=itr)
                 returns.append(self.log_avg_returns(paths)) ## togrok: i think these are expected rewards. but expectation with respect to what?
 
