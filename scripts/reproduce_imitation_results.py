@@ -17,9 +17,11 @@ from sandbox.rocky.tf.policies.gaussian_mlp_policy import GaussianMLPPolicy
 from joblib import Memory
 from airl.algos.irl_trpo import IRLTRPO
 from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
+from airl.version import MUJOCO_VERSION
+JOBLIB_DIR = 'joblib_cache_mj' + MUJOCO_VERSION
+DATA_DIR = 'data_mj' + MUJOCO_VERSION
 
-
-imitation_algos = ['gan_gcl','gail','airl','airl_state_action']
+imitation_algos = ['airl_state_action']#['gan_gcl','gail','airl','airl_state_action']
 baseline_algos = ['expert','random'] # compare RL algorithms
 environments = ['pendulum','ant','swimmer','half_cheetah']
 
@@ -39,7 +41,7 @@ def dict_product(**items):
 #                             environment=environments,
 #                             seed=range(5))
 
-expt_configs = dict_product(algo=['airl'],
+expt_configs = dict_product(algo=imitation_algos,
                             seed=range(5),
                             environment=['pendulum']
                             )
@@ -61,7 +63,7 @@ def get_env(env_name):
 
 def get_demos(env_name):
     if env_name == 'pendulum':
-        return load_latest_experts('data/pendulum', n=5)
+        return load_latest_experts(DATA_DIR + '/pendulum', n=5)
     else:
         raise ValueError('no demo loader for ' + env_name)
 
@@ -89,7 +91,7 @@ def run_expt(config):
         zero_environment_reward=True,
         baseline=LinearFeatureBaseline(env_spec=env.spec)
     )
-    dirname = 'data/' + "___".join([str(k) + "=" + str(v) for k,v in config.items()])
+    dirname = DATA_DIR + "/___".join([str(k) + "=" + str(v) for k,v in config.items()])
     with rllab_logdir(algo=algo, dirname=dirname):
         with tf.Session():
             algo.train()
@@ -101,10 +103,11 @@ def run_expt(config):
     output['return'] = train_results.iloc[-1]['OriginalTaskAverageReturn']
     return output
 # HT code from https://github.com/joblib/joblib/issues/490#issue-205090793
-memory = Memory('joblib_cache', verbose=0)
+memory = Memory(JOBLIB_DIR, verbose=0)
 run_expt_cached = memory.cache(run_expt)
 
 results = Parallel(n_jobs=2)(delayed(run_expt_cached)(config) for config in expt_configs)
 df = pd.DataFrame(results)
+print(df)
 
 print(df.groupby(['algo','environment']).agg({'return': ['mean','sem']}))
