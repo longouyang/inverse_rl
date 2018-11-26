@@ -313,7 +313,7 @@ class AIRLStateAction(SingleTimestepIRL):
             cent_loss = -tf.reduce_mean(self.labels*(log_p_tau-log_pq) + (1-self.labels)*(log_q_tau-log_pq)) ## cross entropy loss
 
             self.loss = cent_loss + reg_loss
-            self.step = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.step = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss, var_list=discrim_vars)
             self._make_param_ops(_vs)
 
     # trains discriminator

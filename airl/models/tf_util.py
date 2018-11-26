@@ -10,6 +10,7 @@ def linear(X, dout, name, bias=True):
         tf.add_to_collection(REG_VARS, W)
         if bias:
             b = tf.get_variable('b', initializer=tf.constant(np.zeros(dout).astype(np.float32)))
+            tf.add_to_collection(REG_VARS, b)
         else:
             b = 0
     return tf.matmul(X, W)+b
