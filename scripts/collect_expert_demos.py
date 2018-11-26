@@ -36,7 +36,6 @@ def main(env_name, n_itr, batch_size, max_path_length, ent_wt):
         max_path_length=max_path_length,
         discount=0.99,
         store_paths=True,
-        ent_wt = ent_wt,
         baseline=LinearFeatureBaseline(env_spec=env.spec)
     )
 
@@ -47,8 +46,7 @@ def main(env_name, n_itr, batch_size, max_path_length, ent_wt):
 
 if __name__ == "__main__":
     main(env_name='ant',
-         n_itr = 1500,
-         batch_size = 15000,
-         max_path_length= 500,
-         ent_wt = 0.1
+         n_itr = 200,
+         batch_size = 1000,
+         max_path_length= 100
          )
