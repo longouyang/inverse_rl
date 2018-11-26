@@ -24,7 +24,7 @@ else:
                         'ant': 'airl/CustomAnt-v0'
                         }
 
-def main(env_name, n_itr, batch_size, max_path_length):
+def main(env_name, n_itr, batch_size, max_path_length, ent_wt):
     env_id = env_names_to_ids[env_name]
     env = TfEnv(GymEnv(env_id, record_video=False, record_log=False))
     policy = GaussianMLPPolicy(name='policy', env_spec=env.spec, hidden_sizes=(32, 32))
@@ -36,6 +36,7 @@ def main(env_name, n_itr, batch_size, max_path_length):
         max_path_length=max_path_length,
         discount=0.99,
         store_paths=True,
+        ent_wt = ent_wt,
         baseline=LinearFeatureBaseline(env_spec=env.spec)
     )
 
@@ -48,5 +49,6 @@ if __name__ == "__main__":
     main(env_name='ant',
          n_itr = 1500,
          batch_size = 15000,
-         max_path_length= 500
+         max_path_length= 500,
+         ent_wt = 0.1
          )
