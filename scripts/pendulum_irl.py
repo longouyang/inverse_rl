@@ -22,7 +22,7 @@ def main():
         policy=policy,
         irl_model=irl_model,
         n_itr=200,
-        batch_size=6400,
+        batch_size=2000,
         max_path_length=100,
         discount=0.99,
         store_paths=True,
