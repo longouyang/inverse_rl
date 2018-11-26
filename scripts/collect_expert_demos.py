@@ -24,7 +24,7 @@ else:
                         'ant': 'airl/CustomAnt-v0'
                         }
 
-def main(env_name, n_itr, batch_size, max_path_length, ent_wt):
+def main(env_name, n_itr, batch_size, max_path_length):
     env_id = env_names_to_ids[env_name]
     env = TfEnv(GymEnv(env_id, record_video=False, record_log=False))
     policy = GaussianMLPPolicy(name='policy', env_spec=env.spec, hidden_sizes=(32, 32))
