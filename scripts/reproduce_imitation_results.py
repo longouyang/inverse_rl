@@ -17,13 +17,15 @@ from sandbox.rocky.tf.policies.gaussian_mlp_policy import GaussianMLPPolicy
 from joblib import Memory
 from airl.algos.irl_trpo import IRLTRPO
 from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
+import airl.envs # registers custom envs for us
+
 from airl.version import MUJOCO_VERSION
 JOBLIB_DIR = 'joblib_cache_mj' + MUJOCO_VERSION
 DATA_DIR = 'data_mj' + MUJOCO_VERSION
 
 imitation_algos = ['airl_state_action']#['gan_gcl','gail','airl','airl_state_action']
 baseline_algos = ['expert','random'] # compare RL algorithms
-environments = ['pendulum','ant','swimmer','half_cheetah']
+environments = ['pendulum','ant','swimmer','halfcheetah']
 
 algo_string_to_model = {
     'gan_gcl': GAN_GCL,
@@ -41,9 +43,9 @@ def dict_product(**items):
 #                             environment=environments,
 #                             seed=range(5))
 
-expt_configs = dict_product(algo=imitation_algos,
+expt_configs = dict_product(algo=['airl_state_action', 'airl'],
                             seed=range(5),
-                            environment=['pendulum']
+                            environment=environments
                             )
 
 # cartesian product of data frames
@@ -54,19 +56,25 @@ def df_prod(df1,df2):
     .drop("__key__", axis=1)
     )
 
+if MUJOCO_VERSION == '1.3.1':
+    env_names_to_ids = {'swimmer': 'Swimmer-v1',
+                        'pendulum': 'Pendulum-v0',
+                        'halfcheetah': 'HalfCheetah-v1',
+                        'ant': 'airl/CustomAnt-v0'
+                        }
+else:
+    env_names_to_ids = {'swimmer': 'Swimmer-v2',
+                        'pendulum': 'Pendulum-v0',
+                        'halfcheetah': 'HalfCheetah-v2',
+                        'ant': 'airl/CustomAnt-v0'
+                        }
 def get_env(env_name):
-    if env_name == 'pendulum':
-        return TfEnv(GymEnv('Pendulum-v0', record_video=False, record_log=False))
-    else:
-        raise ValueError('no env builder for' + env_name)
+    env_id = env_names_to_ids[env_name]
+    return  TfEnv(GymEnv(env_id, record_video=False, record_log=False))
 
 
 def get_demos(env_name):
-    if env_name == 'pendulum':
-        return load_latest_experts(DATA_DIR + '/pendulum', n=5)
-    else:
-        raise ValueError('no demo loader for ' + env_name)
-
+    return load_latest_experts(DATA_DIR + '/' + env_name, n=5)
 
 
 def run_expt(config):
@@ -91,7 +99,7 @@ def run_expt(config):
         zero_environment_reward=True,
         baseline=LinearFeatureBaseline(env_spec=env.spec)
     )
-    dirname = DATA_DIR + "/___".join([str(k) + "=" + str(v) for k,v in config.items()])
+    dirname = DATA_DIR + "/" + "___".join([str(k) + "=" + str(v) for k,v in config.items()])
     with rllab_logdir(algo=algo, dirname=dirname):
         with tf.Session():
             algo.train()
