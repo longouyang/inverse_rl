@@ -39,7 +39,7 @@ def main(env_name, n_itr, batch_size, max_path_length):
         baseline=LinearFeatureBaseline(env_spec=env.spec)
     )
 
-    with rllab_logdir(algo=algo, dirname=DATA_DIR + env_id):
+    with rllab_logdir(algo=algo, dirname=DATA_DIR + '/' + env_name):
         algo.train()
 
 
