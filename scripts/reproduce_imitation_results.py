@@ -81,13 +81,13 @@ def run_expt(config):
         policy=policy,
         irl_model=irl_model,
         n_itr=200,
-        batch_size=2000,
+        batch_size=2000 if env_name=='pendulum' else 10000,
         max_path_length=100,
         discount=0.99,
         store_paths=True,
         discrim_train_itrs=50,
         irl_model_wt=1.0,
-        entropy_weight=1.0,
+        entropy_weight=1.0 if env_name == 'pointmass' else 0.1,
         zero_environment_reward=True,
         baseline=LinearFeatureBaseline(env_spec=env.spec)
     )
